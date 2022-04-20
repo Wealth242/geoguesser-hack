@@ -1,0 +1,456 @@
+UserScript
+// @name             GeoGuessr Ultimate Script
+// @version          0.4.4
+// @description      GeoGuessr Ultimate Script - One Script to rule them all - Work In Progress - Adding features over time - Removes Bottom, Right and Top Bar (Options) - Pimps Data - Makes for a cleaner experience - Removes Author (Optinal - For an extra challenge) - Changes flags with numbered flags - Adjust GeoGuessr Logo position - Adjusts Data position
+// @author           MrAmericanMike
+// @include          /^(https?)?(\:)?(\/\/)?([^\/]*\.)?geoguessr\.com($|\/.*)/
+// @grant            none
+// @run-at           document-start
+// @namespace        https://greasyfork.org/en/scripts/406060-geoguessr-ultimate-script
+// ==/UserScript==
+
+(function() {
+"use strict";
+console.log("GeoGuessrUltimateScript");
+
+// MODULES // Set from 'true' to 'false' any module that you don't need. Example: removeTopBar = false;
+
+// REMOVE BOTTOM WHITE BAR WHILE PLAYING A MAP
+let removeBottomBar = true;
+
+// REMOVE RIGHT WHITE BAR ON ROUND RESULTS SCREEN
+let removeRightBar = true;
+
+// MAKE A CLEANER STREETVIEW BY REMOVING TOP BAR
+let removeTopBar = true;
+
+// REPLACE FLAGS AT THE END OF A GAME WITH NUMBERED FLAGS
+let replaceFlags = true;
+
+// MAKE FLAGS AND PINS TRANSPARENT ON MOUSE OVER
+let transparentPins = true;
+
+// PIMP MY DATA
+let pimpData = true;
+
+let floatData = "RIGHT";                         // Where to place the logo on screen (Valid options "LEFT" "RIGHT")
+
+let dataMargin = "0.5rem";                      // Horizontal margin from the side of the window [default value is "2.0rem"] (https://www.w3schools.com/cssref/css_units.asp)
+let topMargin  = "0.5rem";                      // Vertical margin from top of the window [default value is "1.0rem"] (https://www.w3schools.com/cssref/css_units.asp)
+
+let bgColor     = "rgba(255, 255, 255, 0.55)";  // RGBA COLOR (https://www.hexcolortool.com/)
+let titlesColor = "#000033";                    // Titles color on the data panel in HEX
+let dataColor   = "#660000";                    // Data color on the data panel in HEX
+
+// GEOGUESSR LOGO
+let adjustLogo = true;
+
+let floatLogo     = "LEFT";      // Where to place the logo on screen (Valid options "LEFT" "CENTER" "RIGHT")
+let logoTopMargin = "0.25rem";   // Margin from top of the window (https://www.w3schools.com/cssref/css_units.asp)
+let logoOpacity   = "0.5";		 // Value going from 0.0 to 1.0 (0.0 represents fully transparent)
+
+// HIDE FOOTPRINT - (This is where photospheres author would show)
+let hideFootprint = true;
+
+// HIDE COMPASS - (For an extra challenge)
+let hideCompass = true;
+
+// HIDE FLAG - (Hide the "Back to start flag" - For an extra challenge)
+let hideFlag = false;
+
+// HIDE FULLSCREEN - (For those that don't need this button)
+let hideFullscreen = true;
+
+// HIDE ZOOM - (Hide the zoom controls)
+let hideZoom = true;
+
+// HIDE TOOLTIPS - (Hide the tooltips for flag, fullscreen and zoom controls)
+// Hiding an element does not hide the tooltip, so recommended leave this true
+let hideTooltips = true;
+
+
+// *******************************
+// NO NEED TO EDIT BELOW THIS LINE
+// *******************************
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// DEBUG
+let debug = true;
+
+// IMAGES
+const IMAGES = [
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAC4jAAAuIwF4pT92AAACjUlEQVR4nO2aT4hNURzHf1cTMVn4GzWUkoWUhVIsxIYVg7KwEaYGpZCkKItBzZQkSixkMjUkCxaKrSxYyv8/G2IhiiQl8XyOc5n7NPPc7n3nfa/mfOrTu2+65/1+9/vuPfe9M6+tVqvZaKZN3YCaGIC6ATUxAHUDamIA6gbUxADUDaiJAagbUBMDUDegJnQAy3ErLsYJ+Biv4wB+CFw7F6UC4Kv0dh5WpU/PJklyI92e6Z7j6r+GzMKVeARPY5+Jgyh7BizEten2zfRxGV7BaQ3GTcT92I3H8CR+LlB/DP4oMO4PIS6Bfmt88Fkm4VHchcfNnzUfc46dj+vNn02FCRFAUmDMdOzFg3jRfIh3bfh3dzxuw8M4WKzFIap2F3CXRnfqe7yFT/Cd+Ul0gfk5Z3KzClYtgCxTzZ/iQalyAC0hBqBuQE0MQN2AmhiAugE1MQB1A2piAIFf/ymexzv4FefhGvPrBGMD185FqAA+4T48h98zf3dBXMAO3Is7cFygHnIRIoCHuBtfNNjnNe7BE3gINwXq5Z+EKLoOv+Xc9yV2mV8aO4AbLf+l8cb8SlIpQgSQ9+CzPMPN5hdEutLtOSPs6xZJLps/y94WqFVH1e4C7l3tSXWLHytwLs7AL/gIr5kPrClULYAsD1KDUuUAWkJVAmjHTlyKO1tZWBmAm+3dP0nczO8O3oXwvNVNKAJYYv6+vwGnCOrXoQjgFC4S1B2WqswBMlQBuI/Cl/A2XhX18AtFAFvMf19wn+hmC+rXoQjgvqDmiMQ5QN2AmhhAyfFnbOiXIfdKvpaEUgEkSeIO+r888N/ES0DdgJoYgLoBNTEAcf1XVuxndU1DHYCcGIC6ATUxAHUDakZ9AD8BXfpYQy3tLQsAAAAASUVORK5CYII=',
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAC4jAAAuIwF4pT92AAADRklEQVR4nO2aW4gPURzHf8NGbg+uuSaRcilKEQ9aJbyQdXkgIVvr8uCSpJDkEltaIkK5hBAeeBBCiRe8KeuWktsDNndqib/vr3PG/+z47+78Z/ac37R7vvVpZs7O7Pme7//M5ZyZklwuRy1ZJdIGpOUDkDYgLR+AtAFp+QCkDUjLByBtQFo+AGkD0vIBSBuQlu0ASsEiMBq0B4/AJXACfLRcdyylCgBD6SVYTNabB4MguKLXe/E2mBo5pB+YBLaC/aCShINI2wNGgOl6/apejgfnQfcGjusE1oIKsBPsAd8S1N8K/Elw3D/ZOAWOUcONN9UZbAMrQBWpXvMp5rFDwQxSvSmxbAQQJDimB9gB1oPTpEK8S4V/3XZgMdgCTiWzmFfW7gJ8alRoasAt8Bi8J3URHU7qmtOlqSrMWgCmupHq4laV5QCcyAcgbUBaPgBpA9LyAUgbkJYPQNqAtHwAlv//E3AU3AG1YDCYRmqeoI3lumPJVgBfwBpwGPw2yjmI46AvWA2WgraWPMSSjQCqwUrwrIF9XoNVYDfYCOZb8tKobFRaBn7F3PcFKCc1NbYOzKH4p8YbUjNJqWQjgLiNN/UULCQ1IVKu1wfUsy9Pkpwl1cveJqirjrJ2F+BfdbOGJz8mgEGgJ/gBHoKLpAJrEmUtAFMPNFaV5QCcSCKArmAeqZcmvXXZK3ADnARfXZpxHcBscAR0jJTzm6OZYBOpC+BlV4ZcBzCO/m+8KZ4evwAmgtsuDEldA36Ce+AlqUbz1b61/hs/B+wFI10YcR0AN3w7qbdANUZ5KbhO+RD4lRs/Bzy3bch1APzYW1ug/CapHjHWKOtDzTCAQo0PFfXywaaR+iqV0kAwyth+R2oobV1ZCWAXqVfdoaLDaGvKQgALqO6HFPwitNJV5dIBDAH7ImXLwWdXBtIGcIDyX4bcL/LYDuCcXobib4fOpPRUlFIFEAQBN7rYhoc6BIYZ2zzUXZbGTxJJnQLc0LnGNn8fNIuSfSeUShIB8MCnKlJ2DYzRhPpO6hSxKtcB8FCYp7OiM8FlGlM8cdqsAuD7PI/3+zuss1G5DGADmOKwvlhyGUA42ZkpST8IicsHIG1AWj4AaQPSavEB/AXGOn2ApXeUpQAAAABJRU5ErkJggg==',
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAC4jAAAuIwF4pT92AAADe0lEQVR4nO2aW4hNURjHv80gooxbI/diHiQeRh5dHoxShLyMB51Mjcs8DMklyoNbppgmSjy4RCiXoijKk5RLKOUyLi+EwjQkKdfj//nWYc+ZM2f27H3W+nZZ//p19uXss779P3utvda3Vlk2m6X/WWXaAWjLG6AdgLa8AdoBaMsboB2AtrwB2gFoyxugHYC2vAHaAWjLtgEzwTIwDfQDj8ElcBx8sFx2JCUyAEPpFfiYY3YPBkFw2WwP530wL++SUaAabAf7QSMpG5H0CZgCFpjtK+ZzOjgLhha5bgDYAOrAbrAXfI5Rfg/wK8Z1f2WjChyl4jcfVjnYARpAE8lT8zHitRPBIpKnKbZsGBDEuGYY2AU2g1MkJt6iwv9uX7AcbAMn44X4T2l7C3DVqDO0gmugBbwnaUQnkbQ5g0pVYNoMCGsIySNuVWk2wIm8AdoBaMsboB2AtrwB2gFoyxugHYC2vAGWf/8JOAJugq+gEswnyRP0tlx2JNky4BNYBw6Bn6HjbMQxMBKsBStBH0sxRJINAx6C1eB5ke+8AmtAM9gCllqKpUvZKHQh+B7xuy9ALUlqbBOooehV4zVJJimRbBgQ9ebDegoyJAmRWrM9rpPvcpLkNMlT9jZGWe2UtrcA/6tbDZz8mAXGgwrwBTwCF0gMK4nSZkBYDwxWlWYDnEjLgKkkkyZjQS/wDtwmSa1/cxmIhgEnwJJOzrERG0k6T06kYcCYIuc4PX6YZGZpp4tgNNuANvDMxDCZpCrkxG+BM+a8VWkYwNNm3A3mOp9bpzsaXAUTzH5PkvFCk+1gNAxoLnDsJTgA9oSODXQRTJpegxV5+3dcFKppADd4PLvL01z8uDeEzt0gWUdgXZoG8Jxfed6xXD+/ntoPo60pTVWAxTPLgw1tLgrUNIDrOM8G83R3pflkA2aD66CKJG9gVUkN4JY7tzLkfjevrQ5t9wf7SIbBLG4fOD+wKklwUZTIgCAI+Ka7e+OFxMtjuAucCR2bUYLf7VKuqwB3gHgFyJsC50bk7TvJFbo2IEPSxz8HLpKM9/nfr6KOff+7LgLSaAQ551dj6EycVmt0EYxrA6IsaeN8AC+uvGc5lj9ybcBckh7fYuqY9OSqcJ5k2VyLq4BcG8BJz/UGXgTFo0B+/+eGxj8cx6PaEWo1qCptXWHn8gZoB6Atb4B2ANr6DQSNiEWFKZLTAAAAAElFTkSuQmCC',
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAC4jAAAuIwF4pT92AAADCklEQVR4nO2aW4hNURjHv63JrZQRE+GBJEl5kyeXF14QyoOXCaNxeXBtKOTBrSFJklwSUUhSHhRPbiXeKMYlDxQhioRIjP9nrWP2OY1ztr1nrf+qs3716+w9Z+9Z3/6fvc8+e63V0NnZKfVMA7sANjEAdgFsYgDsAtjEANgFsIkBsAtgEwNgF8AmBsAugI3rAKbBJXAS7A8fwcvwNPzguO1MFAoAj9LL8TLTrh5JkuSKXR6m63B2xS4j4Qy4Ax6Cu4UcRNEzYCKca5ev2tcp8AIcUmW/AXAjbIV74QH4OUf7veCvHPv9xcUlcFKqH3yaRrgTrob7xJw1HzPuOx7OF3M25cZFAEmOfZpgO9wMz4oJ8a50/+n2g8vgdngmX4ldhHYX0Euj1foe3oSP4TsxX6ITxHznDOqpBkMLIM1gMae4U0IOwAsxAHYBbGIA7ALYxADYBbCJAbALYBMDcPz/n8AT8A78DsfCOWL6CXo7bjsTrgL4BNvgcfgz9XcN4hQcAdfDFbCPoxoy4SKAh3ANfFZlm5dwLdwPt8JmR7XUxEWj8+CPjNu+gC1iusY2wYWS/dJ4JaYnqRAuAsh68GmewkViOkRa7PKof2yrnSTnxZxlb3O0VUZodwH9VLdZtfNjOhwDh8KvsANeEhNYjxBaAGkeWJ0ScgBeCCWAqWK6x0voLfS6j4ZDCKAvPCrmR1KJRl+NhxDAFik/eK+wA9Bv+jZmAcwAdFjrmJCfCZgBrIST7bJOWM4zolQYVgA6Srwrta7D5c2MQlgBHBQzDKboz9obUkcBLBDTJ6DoSLCODM8i1PEH3wEMlPInOJ0j8EZI17/iO4A9Yh5slFti7gJUigZwWLpmhtyvsa3OHFmaWh8Ob9vlpoptda7ABvhNzBOhMwoFkCSJHnStA1e020tnf6RP9dHW7ij9MvySv7ps+LoEtKNjnKe2/gtfAZyDF6u8vxiuSq2vg9ek4ASoLPgKoKPG+68r1p/De25KKYf9MEQnBsAuwNJu9U4oAdCIAbALYBMDYBfApu4D+A30N2yf3VLhEwAAAABJRU5ErkJggg==',
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAACXBIWXMAAC4jAAAuIwF4pT92AAADUUlEQVR4nO2aW4hNURjHv61xjeQaRSJRTCkPXpR44UHk9sKDZGpQCknCNMml0JCIeBARIk15EB68eHJ5Um4jD0chlwmDRpPL+H/WambP7lyWffa3vl2z/vXrnH3O2mf99/+svfY53141nZ2d1JtVo21AWyEAbQPaCgFoG9BWCEDbgLZCANoGtBUC0DagrRCAtgFtSQcwF6wFs8Ag8AzcABfAZ+G+nVRVAPgrvR4PC+zm6SiKbtnnY3kbLErsMh7MB/vASXCQlIOodgTMAEvs89v2cQ64BkaV2W8I2A7qQRM4Br6n6L8P+JNivy5JnALnqPzBxzUM7AebwBEyo+aL477TwDIyoym1JAKIUuwzGhwAu8BlMiHep+Lf7kCwDuwFl9JZ7FbergJ8atRbWsFd8Bx8JDOJ1pKZc4Zn1WHeAohrJJkhLqo8B+BFIQBtA9oKAWgb0FYIQNuAtkIA2ga0FQIQ/vwWcBbcAx1gClhMpk7QT7hvJ0kF8BVsA2fA79jrHMR5MA5sBRtAfyEPTpII4AnYDF6WafMabAFHQSNYLeSloiQ6XQp+OrZ9BerIlMZ2gpXkfmq8IVNJqkoSAbgefFwvwBoyBZE6+3xiibZcJLlKZpS9T9FXD+XtKsDf6h4LFz/mgclgDGgHT8F1MoFlorwFENdji6jyHIAXaQTAw9ql1HUYFGSt6ATA9w02OrQ7IW2EpRGAa0X3k6gLK40ARiS2eWZvL9LOyy2zPATAP5wyu6z9r/IQQKuChy5pzwH8R8n1XqCItEcAL1W/QuZy9xDcBN98mvEdAPc3NLG9IrbNt8j5HyLf8e3wZcinePiXu3s8GDSQWVGyEPySNuQ7gB9gOWiz27yOYDqZRRa1sXa8ioSLJcelDVUbwCnqXhnyyKE9n9/NRV5vtOyOvbaK8h5AFEV80C4HXkk8GfJKkYaYpwkZfG5F+T4FeCXIhxLv8SkQ99NWol2m8h0Az/BTySyiegDekpn4ZoMdibZ3fBjyHQCv+phpKSeeK5rk7fgPIPkzuJj4XyD/NijIWjHyHQBPdLzCi2sCAxLvvQMXwSEqPU9kLt8BNFv6gklkRgRXefngC569/JNWTZBL5y1KffdQKIpqG9BWCEDbgLZ6fQB/AYF2gh8Ua2M5AAAAAElFTkSuQmCC'
+];
+
+setTimeout(executeRealTime, 5);
+setTimeout(executeRealTime, 150);
+setTimeout(executeRealTime, 300);
+setTimeout(executeRealTime, 600);
+setTimeout(executeRealTime, 900);
+setTimeout(executeRealTime, 1200);
+setTimeout(executeRealTime, 1500);
+
+// REAL TIME
+function executeRealTime(){
+    if(removeBottomBar){
+        doRemoveBottomBar();
+    }
+    if(removeRightBar){
+        doRemoveRightBar();
+    }
+    if(removeTopBar){
+        doRemoveTopBar();
+    }
+    if(adjustLogo){
+        doAdjustLogo();
+    }
+}
+
+
+if(pimpData){
+    doPimpData();
+}
+if(hideFootprint){
+    doHideFootprint();
+}
+if(hideCompass){
+    doHideCompass();
+}
+if(hideFlag){
+    doHideFlag();
+}
+if(hideFullscreen){
+    doHideFullscreen();
+}
+if(hideZoom){
+    doHideZoom();
+}
+if(hideTooltips){
+    doHideTooltips();
+}
+
+if(replaceFlags){
+    setTimeout(changeFlags, 1500);
+    setTimeout(changeFlags, 750);        
+    setTimeout(changeFlags, 600);
+    setTimeout(changeFlags, 450);
+    setTimeout(changeFlags, 250);
+    setTimeout(changeFlags, 50);
+    document.addEventListener('mouseup', (event) => {
+        setTimeout(changeFlags, 750);        
+        setTimeout(changeFlags, 600);
+        setTimeout(changeFlags, 450);
+        setTimeout(changeFlags, 250);
+        setTimeout(changeFlags, 50);
+    });
+}
+
+if(transparentPins){
+    setTimeout(makePinsTransparent, 1500);
+    setTimeout(makePinsTransparent, 750);
+    setTimeout(makePinsTransparent, 600);
+    setTimeout(makePinsTransparent, 450);
+    setTimeout(makePinsTransparent, 250);
+    setTimeout(makePinsTransparent, 50);
+    document.addEventListener('mouseup', (event) => {
+        setTimeout(makePinsTransparent, 750);
+        setTimeout(makePinsTransparent, 600);
+        setTimeout(makePinsTransparent, 450);
+        setTimeout(makePinsTransparent, 250);
+        setTimeout(makePinsTransparent, 50);
+    });
+}
+
+// BOTTOM BAR
+function doRemoveBottomBar(){
+    addGlobalStyle(`
+        .game-layout__in-game-ad {
+            display: none;
+        }
+    `);
+}
+
+// RIGHT BAR
+function doRemoveRightBar(){
+    addGlobalStyle(`
+        .result__right {
+            display: none;
+        }
+    `);
+}
+
+// TOP BAR
+function doRemoveTopBar(){
+    if(window.location.pathname.includes("game") || window.location.pathname.includes("challenge")){
+        addGlobalStyle(`
+            .layout {
+                --layout-header-height: 0rem;
+            }
+            .header__right{
+                display: none;
+            }
+            .game-layout__panorama-canvas{
+                height: 100%;
+            }
+        `);
+    }
+    else{
+        addGlobalStyle(`
+            .layout {
+                --layout-header-height: 3rem;
+            }
+            .header__right{
+                display: block;
+            }
+        `);
+    }
+}
+
+// DATA
+function doPimpData(){
+
+    switch(floatData){
+        case "LEFT":
+            addGlobalStyle(`
+                .game-layout__status{
+                    top: ${topMargin};
+                    left: ${dataMargin};
+                    right: auto;
+                }
+            `);
+            break;
+
+        case "RIGHT":
+            addGlobalStyle(`
+                .game-layout__status{
+                    top: ${topMargin};
+                    right: ${dataMargin};
+                    left: auto;
+                }
+            `);
+            break;
+
+        default:
+            break;
+    }
+
+    addGlobalStyle(`
+        .game-statuses {
+            background: ${bgColor};
+        }
+        .game-status__heading{
+            color: ${titlesColor};
+        }
+        .game-status__body{
+            color: ${dataColor};
+        }
+    `);
+}
+
+// FOOTPRINT
+function doHideFootprint(){
+    addGlobalStyle(`
+        .gmnoprint, .gm-style-cc{
+            display: none;
+        }
+    `);
+}
+
+// COMPASS
+function doHideCompass(){
+    addGlobalStyle(`
+        .compass{
+            display: none;
+        }
+    `);
+}
+
+// FLAG
+function doHideFlag(){
+    addGlobalStyle(`
+        [data-qa="return-to-start"]{
+            display: none;
+        }
+    `);
+}
+
+// FULLSCREEN
+function doHideFullscreen(){
+    addGlobalStyle(`
+        [data-qa="enter-fullscreen"]{
+            display: none;
+        }
+    `);
+}
+
+// ZOOM
+function doHideZoom(){
+    addGlobalStyle(`
+        [data-qa="pano-zoom-in"]{
+            display: none;
+        }
+        [data-qa="pano-zoom-out"]{
+            display: none;
+        }
+    `);
+}
+
+// HIDE TOOLTIPS
+function doHideTooltips(){
+    addGlobalStyle(`
+        .tooltip__label{
+            display: none;
+        }
+    `);
+}
+
+// GEOGUESSR LOGO
+function doAdjustLogo(){
+    if(window.location.pathname.includes("game") || window.location.pathname.includes("challenge")){
+    switch(floatLogo){
+        case "LEFT":
+        addGlobalStyle(`
+            .header__left{
+                margin-left: 0;
+            }
+        `);
+        break;
+
+        case "CENTER":
+        addGlobalStyle(`
+            .header__left{
+                margin-left: auto;
+            }
+        `);
+        break;
+
+        case "RIGHT":
+        addGlobalStyle(`
+            .header__left{
+                margin-left: auto;
+                margin-right: 0;
+            }
+        `);
+        break;
+    }
+
+    addGlobalStyle(`
+        .header__logo{
+            margin-top: ${logoTopMargin};
+            opacity: ${logoOpacity};
+        }
+    `);
+    }
+    else{
+    addGlobalStyle(`
+        .header__left{
+            margin-left: 0;
+        }
+        .header__logo{
+            margin-top: auto;
+            opacity: 1;
+        }
+        `);
+    }
+}
+
+// CHANGE FLAGS
+function changeFlags(){
+    let flags = document.getElementsByClassName("pin__image");
+    if (flags.length >= 5) {
+        Array.prototype.forEach.call(flags, (img, n) => {
+            img.src = IMAGES[n];
+        });
+    }
+    else if(flags){
+        Array.prototype.forEach.call(flags, (img, n) => {
+            img.src = "https://www.geoguessr.com/_next/static/images/correct-location-5bdcd0a4eabbbb9e42feb5c54e54f4a1.png";
+        });      
+    }
+}
+
+// TRANSPARENT FLAGS
+function makePinsTransparent(){
+    let pins = document.getElementsByClassName("map-pin");
+    Array.prototype.forEach.call(pins, (pin, n) => {
+        pin.addEventListener("mouseover", () => {
+            pin.style.opacity = 0.25;
+        });
+        pin.addEventListener("mouseout", () => {
+            pin.style.opacity = 1;
+        });
+    });
+}
+
+// GLOBAL STYLES INJECTOR
+function addGlobalStyle(css) {
+    let head;
+    let style;
+    head = document.getElementsByTagName('head')[0];
+    if (!head) { return; }
+    style = document.createElement('style');
+    style.type = 'text/css';
+    style.innerHTML = css.replace(/;/g, ' !important;');
+    head.appendChild(style);
+}
+
+// LISTEN FOR PAGE CHANGES
+let currentTab = "";
+let oldTab = "";
+
+window.addEventListener("click", (event) => {    
+    for (let x = 0; x < 1250; x+=250){
+        setTimeout(() => {
+            lookForURLChange(event);
+        }, x);
+    }
+});
+
+function lookForURLChange(event) {
+    if(event.explicitOriginalTarget){
+        currentTab = event.explicitOriginalTarget.baseURI;
+    }
+  	else if(event.path){
+        event.path.forEach((element) => {
+            if(element.hasOwnProperty("URL") && element.hasOwnProperty("location")){
+                currentTab = element.location.pathname;
+            }
+        });
+    }
+
+    if(oldTab != currentTab){
+        oldTab = currentTab;
+        setTimeout(executeRealTime, 0);
+    }
+}
+
+function myLog(data) {
+    if(debug){
+        console.log(data);
+    }
+}
+
+})();
